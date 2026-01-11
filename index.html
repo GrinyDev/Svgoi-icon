@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>极简代码编辑器</title>
+<!-- 主文件样式 -->
+<link rel="stylesheet" href="Style/app.css">
+<!-- CodeMirror -->
+<link rel="stylesheet" type="text/css" href="Style/bjq/01.css">
+<link rel="stylesheet" href="Style/bjq/02.css">
+</head>
+
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    user-select: none;
+    -ms-user-select: none;
+    -moz-user-select: none;
+    box-sizing: border-box;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+</style>
+
+<body>
+
+<div class="app">
+  <div class="page active" id="page-home">
+    <header class="header">
+      <div class="header__title">SVGOI - ICON</div>
+      <div class="header__actions">
+        <button class="btn btn--icon" onclick="showNewProjectModal()" title="新建项目">
+          <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 32 32"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 2v28M2 16h28"/></svg>
+        </button>
+        <button class="btn btn--icon" onclick="showPage('page-projects')" title="全部项目">
+          <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="4"><path d="M8 14a4 4 0 1 0 0-8a4 4 0 0 0 0 8Zm0 12a2 2 0 1 0 0-4a2 2 0 0 0 0 4Zm0 14a2 2 0 1 0 0-4a2 2 0 0 0 0 4Z"/><path stroke-linecap="round" d="M20 24h24M20 38h24M20 10h24"/></g></svg>
+        </button>
+        <button class="btn btn--icon" id="view-toggle-btn" onclick="toggleProjectView()" title="收藏">
+          <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11.146 11.023c.38-.682.57-1.023.854-1.023s.474.34.854 1.023l.098.176c.108.194.162.29.246.354c.085.064.19.088.4.135l.19.044c.738.167 1.107.25 1.195.532s-.164.577-.667 1.165l-.13.152c-.143.167-.215.25-.247.354s-.021.215 0 .438l.02.203c.076.785.114 1.178-.115 1.352c-.23.174-.576.015-1.267-.303l-.178-.082c-.197-.09-.295-.135-.399-.135s-.202.045-.399.135l-.178.082c-.691.319-1.037.477-1.267.303s-.191-.567-.115-1.352l.02-.203c.021-.223.032-.334 0-.438s-.104-.187-.247-.354l-.13-.152c-.503-.588-.755-.882-.667-1.165c.088-.282.457-.365 1.195-.532l.19-.044c.21-.047.315-.07.4-.135c.084-.064.138-.16.246-.354z" opacity=".5"/><path d="M2 6.95c0-.883 0-1.324.07-1.692A4 4 0 0 1 5.257 2.07C5.626 2 6.068 2 6.95 2c.386 0 .58 0 .766.017a4 4 0 0 1 2.18.904c.144.119.28.255.554.529L11 4c.816.816 1.224 1.224 1.712 1.495a4 4 0 0 0 .848.352C14.098 6 14.675 6 15.828 6h.374c2.632 0 3.949 0 4.804.77q.119.105.224.224c.77.855.77 2.172.77 4.804V14c0 3.771 0 5.657-1.172 6.828S17.771 22 14 22h-4c-3.771 0-5.657 0-6.828-1.172S2 17.771 2 14z"/></g></svg>
+        </button>
+        <button class="btn btn--icon" onclick="showPage('page-about')" title="设置">
+          <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" d="M7.843 20.198C9.872 21.399 10.886 22 12 22s2.128-.6 4.157-1.802l.686-.407c2.029-1.2 3.043-1.802 3.6-2.791c.557-.99.557-2.19.557-4.594M20.815 8a3.6 3.6 0 0 0-.372-1c-.557-.99-1.571-1.59-3.6-2.792l-.686-.406C14.128 2.601 13.114 2 12 2s-2.128.6-4.157 1.802l-.686.406C5.128 5.41 4.114 6.011 3.557 7C3 7.99 3 9.19 3 11.594v.812c0 2.403 0 3.605.557 4.594c.226.402.528.74.943 1.08"/><circle cx="12" cy="12" r="3"/></g></svg>
+        </button>
+      </div>
+    </header>
+    <div class="content">
+      <div class="projects-grid" id="recent-projects"></div>
+    </div>
+    <button class="fab" onclick="showNewProjectModal()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+    </button>
+  </div>
+
+  <div class="page" id="page-projects">
+    <!-- 头部导航 -->
+    <header class="header" id="project-header">
+      <div class="header__back" onclick="showPage('page-home')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="m8.82 12l7.715 7.716q.22.22.218.528t-.224.529q-.221.221-.529.221t-.529-.221L7.83 13.136q-.243-.242-.354-.54q-.112-.298-.112-.596t.112-.596t.354-.54l7.64-7.644q.221-.221.532-.218q.31.003.531.224t.222.529t-.222.528z"/></svg>
+        项目列表
+      </div>
+      <div class="header__actions">
+        <button class="btn btn--icon" id="view-toggle" onclick="toggleViewMode()" title="切换视图">
+          <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="4"><path d="M8 14a4 4 0 1 0 0-8a4 4 0 0 0 0 8Zm0 12a2 2 0 1 0 0-4a2 2 0 0 0 0 4Zm0 14a2 2 0 1 0 0-4a2 2 0 0 0 0 4Z"/><path stroke-linecap="round" d="M20 24h24M20 38h24M20 10h24"/></g></svg>
+        </button>
+        <button class="btn btn--icon" onclick="renderAllProjects()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+    <!-- 批量操作栏 -->
+    <header class="batch-selection-bar" id="batch-selection-bar">
+      <div class="batch-selection-bar__info">
+        <button class="btn btn--icon" onclick="exitBatchSelection()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+        <span class="batch-selection-bar__count">已选择 <span id="selected-count">0</span> 个项目</span>
+      </div>
+      <div class="batch-selection-bar__actions">
+        <button class="btn btn--icon" onclick="selectAllProjects()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 24 24"><path fill="none" stroke="#000000" stroke-width="1.5" d="M7 7h10v10H7zM2 9v6m20-6v6M2 6.5V2h4.5M22 6.5V2h-4.5M2 17.5V22h4.5M22 17.5V22h-4.5M9 2h6M9 22h6"/></svg>
+        </button>
+        <button class="btn btn--icon" onclick="batchExportProjects()" title="导出选中项目">
+          <svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 24 24"><g fill="none" stroke="#333333" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><path d="M4 7c.59.607 2.16 3 3 3s2.41-2.393 3-3M7 9V2"/><path d="M4 13v1.544c0 3.245 0 4.868.886 5.967a4 4 0 0 0 .603.603C6.59 22 8.211 22 11.456 22c.705 0 1.058 0 1.381-.114q.1-.036.197-.082c.31-.148.559-.397 1.058-.896l4.736-4.736c.579-.578.867-.867 1.02-1.235c.152-.368.152-.776.152-1.594V10c0-3.771 0-5.657-1.172-6.828S15.771 2 12 2m1 19.5V21c0-2.828 0-4.243.879-5.121C14.757 15 16.172 15 19 15h.5"/></g></svg>
+        </button>
+        <button class="btn btn--danger" onclick="batchDeleteProjects()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5" d="M20.5 6h-17m5.67-2a3.001 3.001 0 0 1 5.66 0m3.544 11.4c-.177 2.654-.266 3.981-1.131 4.79s-2.195.81-4.856.81h-.774c-2.66 0-3.99 0-4.856-.81c-.865-.809-.953-2.136-1.13-4.79l-.46-6.9m13.666 0l-.2 3"/></svg>
+        </button>
+      </div>
+    </header>
+    <div class="content">
+      <div class="projects-list" id="all-projects">
+      </div>
+    </div>
+    <button class="fab" onclick="showNewProjectModal()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+    </button>
+  </div>
+
+  <div class="page" id="page-editor">
+    <div class="editor__header">
+      <div class="header__back" onclick="handleBack()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="m8.82 12l7.715 7.716q.22.22.218.528t-.224.529q-.221.221-.529.221t-.529-.221L7.83 13.136q-.243-.242-.354-.54q-.112-.298-.112-.596t.112-.596t.354-.54l7.64-7.644q.221-.221.532-.218q.31.003.531.224t.222.529t-.222.528z"/></svg>
+      </div>
+      <div class="editor__name" id="current-project-name">未命名项目</div>
+      <div class="editor__toolbar">
+        <button class="btn btn--icon" onclick="undo()" title="撤销">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 7v6h6"></path>
+            <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"></path>
+          </svg>
+        </button>
+        <button class="btn btn--icon" onclick="redo()" title="重做">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 7v6h-6"></path>
+            <path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l3 2.7"></path>
+          </svg>
+        </button>
+        <button class="btn btn--icon" onclick="saveProject()" title="保存">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+            <polyline points="7 3 7 8 15 8"></polyline>
+          </svg>
+        </button>
+        <button class="btn btn--icon" onclick="toggleFindReplace()" title="查找替换">
+          <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 20 20"><path fill="currentColor" d="M8.037 3.167a1.44 1.44 0 0 0 .128.996a5.5 5.5 0 1 0 6.413 7.45q.081.085.178.157c.219.149.477.228.746.229l-.005.001h.004a6.5 6.5 0 0 1-1.064 1.73l3.417 3.416a.5.5 0 0 1-.638.765l-.07-.058l-3.417-3.417a6.5 6.5 0 1 1-5.692-11.27M15.484 6a.3.3 0 0 1 .286.201l.249.766a1.58 1.58 0 0 0 .999.998l.765.248l.015.004a.303.303 0 0 1 .146.46a.3.3 0 0 1-.146.11l-.765.248a1.58 1.58 0 0 0-.999.998l-.249.766a.302.302 0 0 1-.57 0l-.25-.766a1.58 1.58 0 0 0-.998-1.002l-.765-.248a.303.303 0 0 1-.146-.46a.3.3 0 0 1 .146-.11l.765-.248a1.58 1.58 0 0 0 .984-.998L15.2 6.2a.3.3 0 0 1 .284-.2M12.48 0a.42.42 0 0 1 .399.282l.348 1.072a2.2 2.2 0 0 0 1.398 1.396l1.072.349l.022.005a.424.424 0 0 1 0 .797l-1.072.349a2.21 2.21 0 0 0-1.399 1.396L12.9 6.718a.423.423 0 0 1-.643.204l-.02-.015a.43.43 0 0 1-.135-.19l-.348-1.07a2.22 2.22 0 0 0-1.399-1.403l-1.072-.348a.423.423 0 0 1 0-.797l1.072-.349a2.21 2.21 0 0 0 1.377-1.396L12.08.282a.42.42 0 0 1 .4-.282"/></svg>
+        </button>
+        <button class="btn btn--icon" onclick="toggleRunPreview()" title="运行代码" id="run-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 256 256"><path fill="currentColor" d="M231.36 116.19L87.28 28.06a14 14 0 0 0-14.18-.27A13.69 13.69 0 0 0 66 39.87v176.26a13.69 13.69 0 0 0 7.1 12.08a14 14 0 0 0 14.18-.27l144.08-88.13a13.82 13.82 0 0 0 0-23.62m-6.26 13.38L81 217.7a2 2 0 0 1-2.06 0a1.78 1.78 0 0 1-1-1.61V39.87a1.78 1.78 0 0 1 1-1.61A2.06 2.06 0 0 1 80 38a2 2 0 0 1 1 .31l144.1 88.12a1.82 1.82 0 0 1 0 3.14"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="find-replace-panel" id="find-replace-panel">
+      <div class="find-replace__column find-replace__column--inputs">
+        <div class="find-input-wrapper">
+          <input type="text" class="find-replace__input" id="find-input" placeholder="查找内容" oninput="findText()">
+          <div class="find-replace__info" id="find-info"></div>
+        </div>
+        <div class="replace-input-wrapper">
+          <input type="text" class="find-replace__input inputb" id="replace-input" placeholder="替换内容">
+          <div class="replace-buttons">
+            <button class="btn btn--small" onclick="replaceText()" title="替换">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                <polyline points="17 1 21 5 17 9"></polyline>
+                <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+                <polyline points="7 23 3 19 7 15"></polyline>
+                <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+              </svg>
+            </button>
+            <button class="btn btn--small" onclick="replaceAllText()" title="全部替换">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                <path d="M3 3v5h5"></path>
+                <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path>
+                <path d="M16 16h5v5"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="find-replace__column find-replace__column--actions">
+        <div class="find-replace__button-grid">
+          <button class="btn btn--small" onclick="findNext()" title="查找下一个">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+              <polyline points="7 13 12 18 17 13"></polyline>
+              <polyline points="7 6 12 11 17 6"></polyline>
+            </svg>
+          </button>
+          <button class="btn btn--small" onclick="findPrev()" title="查找上一个">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+              <polyline points="17 11 12 6 7 11"></polyline>
+              <polyline points="17 18 12 13 7 18"></polyline>
+            </svg>
+          </button>
+          <button class="btn btn--small" onclick="undoReplace()" onmousedown="startReplaceUndoLongPress()" onmouseup="cancelReplaceUndoLongPress()" onmouseleave="cancelReplaceUndoLongPress()" ontouchstart="startReplaceUndoLongPress()" ontouchend="cancelReplaceUndoLongPress()" title="撤销替换（单击挨个撤销，长按一键撤销）">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+              <path d="M3 7v6h6"></path>
+              <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"></path>
+            </svg>
+          </button>
+          <button class="btn btn--small" onclick="closeFindReplace()" title="关闭">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="editor__main">
+      <div class="editor__code-wrapper">
+        <textarea class="editor__code" id="code-editor" placeholder="在此输入 SVG 代码..." spellcheck="false"></textarea>
+        <div class="editor__preview" id="preview-panel">
+          <div class="editor__preview-content" id="preview-content"></div>
+        </div>
+      </div>
+      <div class="editor__symbols">
+        <div class="editor__symbols-resizer"></div>
+        <div class="editor__symbols-grid"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page" id="page-about">
+    <header class="header">
+      <div class="header__back" onclick="showPage('page-home')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="m8.82 12l7.715 7.716q.22.22.218.528t-.224.529q-.221.221-.529.221t-.529-.221L7.83 13.136q-.243-.242-.354-.54q-.112-.298-.112-.596t.112-.596t.354-.54l7.64-7.644q.221-.221.532-.218q.31.003.531.224t.222.529t-.222.528z"/></svg>
+        功能设置
+      </div>
+    </header>
+    <div class="content">
+      <div class="settings-container">
+        <div class="settings-section">
+          <div class="settings-item">
+            <div class="settings-item__content">
+              <h3 class="settings-item__title">列表状态</h3>
+              <p class="settings-item__description">开启后，列表/宫格切换状态将被保存。</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="save-view-toggle" onchange="toggleSaveViewSetting()">
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="settings-item">
+            <div class="settings-item__content">
+              <h3 class="settings-item__title">项目图标</h3>
+              <p class="settings-item__description">开启后，项目列表将与代码作为图标显示。</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="icon-fetch-toggle" onchange="toggleIconFetchSetting()">
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="settings-item">
+            <div class="settings-item__content">
+              <h3 class="settings-item__title">复制项目代码</h3>
+              <p class="settings-item__description">开启后，点击项目图标即可复制项目代码。</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="code-copy-toggle" onchange="toggleCodeCopySetting()">
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="settings-item">
+            <div class="settings-item__content">
+              <h3 class="settings-item__title">自动备份</h3>
+              <p class="settings-item__description">开启后，每次项目修改都会自动备份到本地。</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="auto-backup-toggle" onchange="toggleAutoBackupSetting()">
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="settings-item">
+            <div class="settings-item__content">
+              <h3 class="settings-item__title">代码换行</h3>
+              <p class="settings-item__description">开启后，代码将自动换行显示。</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="line-wrap-toggle" onchange="toggleLineWrapSetting()">
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+        <div class="settings-info">
+          <h3 class="settings-info__title">存储文件结构</h3>
+          <div class="settings-info__content">
+            <p>📁 <strong>Svgicon</strong></p>
+            <p>&nbsp;&nbsp;├─ 📁 <strong>Completion</strong> - 项目导出存放在此</p>
+            <p>&nbsp;&nbsp;├─ 📁 <strong>Back up</strong> - 项目备份文件在此</p>
+            <p>&nbsp;&nbsp;└─ 📄 <strong>Hello.txt</strong> - 使用与隐私声明文件</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 代码运行悬浮窗 -->
+<div class="run-preview" id="run-preview" style="display: none;">
+  <div class="run-preview__content">
+    <div class="run-preview__svg-container" id="run-preview-content"></div>
+  </div>
+</div>
+
+<!-- 主要js文件 -->
+<script src="Script/app.js"></script>
+<script src="Script/symbols.js"></script>
+<script src="Script/autocomplete.js"></script>
+<!-- 文件管理文件 -->
+<script src="Script/fileManager.js"></script>
+<!-- CodeMirror -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/xml/xml.min.js"></script>
+<!-- 颜色填充文件 -->
+<script src="Script/color-highlight.js"></script>
+
+<script>
+  webapp.设置深色模式(false);
+  webapp.设置下拉刷新(false);
+  webapp.设置加载效果(false);
+  webapp.设置状态栏变色('#fff');
+</script>
+
+</body>
+</html>
