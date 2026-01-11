@@ -1,0 +1,70 @@
+.cm-s-dracula,
+.cm-s-dracula.CodeMirror {
+  background-color: transparent !important;
+  color: #2c3e50 !important;
+  border: none;
+}
+
+.cm-s-dracula .CodeMirror-gutters {
+  color: #2c3e50;
+}
+
+.cm-s-dracula .CodeMirror-cursor {
+  border-left: solid thin #2c3e50;
+}
+
+.cm-s-dracula .CodeMirror-linenumber {
+  color: #7f8c8d;
+}
+
+.cm-s-dracula .CodeMirror-selected {
+  background-color: rgba(255, 255, 0, 0.3) !important;
+}
+
+/* 长按复制 */
+.cm-s-dracula .CodeMirror-line::selection,
+.cm-s-dracula .CodeMirror-line>span::selection,
+.cm-s-dracula .CodeMirror-line>span>span::selection {
+  color: white;
+  background: #87CEEB;
+}
+
+.cm-s-dracula .CodeMirror-line::-moz-selection,
+.cm-s-dracula .CodeMirror-line>span::-moz-selection,
+.cm-s-dracula .CodeMirror-line>span>span::-moz-selection {
+  background: rgba(0, 128, 255, 0.3);
+}
+
+.cm-s-dracula span.cm-comment {
+  color: #27ae60;
+}
+
+.cm-s-dracula span.cm-comment {
+  color: #999; /* 代码注释 */
+}
+
+.cm-s-dracula span.cm-tag {
+  color: #3498db; /* 标签元素 */
+}
+
+.cm-s-dracula span.cm-attribute {
+  color: #e74c3c; /* 属性 */
+}
+
+.cm-s-dracula span.cm-string,
+.cm-s-dracula span.cm-string-2 {
+  color: #27ae60; /* 字符串双引号 */
+}
+
+.cm-s-dracula span.cm-number {
+  color: #f1c40f; /* 数字高亮 */
+}
+
+.cm-s-dracula .CodeMirror-activeline-background {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.cm-s-dracula .CodeMirror-matchingbracket {
+  text-decoration: underline;
+  color: #2c3e50 !important;
+}
